@@ -43,7 +43,7 @@ A modern, secure content platform powered by AI with Firebase backend, authentic
 
 ### Content Management
 - ✅ **AI-Powered Content** - Generate articles and images with Gemini AI
-- ✅ **Image Upload** - Upload custom images via Firebase Storage
+- ✅ **Image Upload** - Upload custom images (stored as base64 in Firestore - completely FREE!)
 - ✅ **Edit & Delete** - Full CRUD operations for articles
 
 ### User Experience
@@ -64,10 +64,20 @@ A modern, secure content platform powered by AI with Firebase backend, authentic
 ## 🛠️ Tech Stack
 
 - **Frontend:** React 19, TypeScript, Tailwind CSS
-- **Backend:** Firebase (Firestore, Functions, Storage, Auth)
+- **Backend:** Firebase (Firestore, Functions, Auth) - **100% Free Tier Compatible!**
+- **Image Storage:** Base64 in Firestore (no paid storage required)
 - **AI:** Google Gemini (via Cloud Functions)
 - **SEO:** react-helmet-async
 - **Ads:** Google AdSense
+
+## 💰 Free Tier Friendly
+
+This project is designed to work entirely on Firebase's free tier:
+- ✅ **Firestore** - Free tier: 1GB storage, 50K reads/day, 20K writes/day
+- ✅ **Cloud Functions** - Free tier: 2M invocations/month
+- ✅ **Authentication** - Free tier: Unlimited
+- ✅ **Image Storage** - Images stored as base64 in Firestore (automatically compressed)
+- ❌ **No Firebase Storage required** - Saves you from needing the Blaze plan!
 
 ## 📝 Environment Variables
 
