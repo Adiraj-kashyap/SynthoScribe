@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../lib/auth';
 
 interface CommentFormProps {
-  onSubmit: (author: string, content: string) => void;
+  onSubmit: (author: string, content: string, avatarUrl?: string) => void;
 }
 
 const CommentForm: React.FC<CommentFormProps> = ({ onSubmit }) => {
@@ -24,7 +24,9 @@ const CommentForm: React.FC<CommentFormProps> = ({ onSubmit }) => {
       setError('Both name and comment fields are required.');
       return;
     }
-    onSubmit(author, content);
+    // Get avatar URL from user's Google account, or generate one from name
+    const avatarUrl = user?.photoURL || (author ? `https://ui-avatars.com/api/?name=${encodeURIComponent(author)}&background=random` : undefined);
+    onSubmit(author, content, avatarUrl);
     // Don't clear author if user is logged in
     if (!user) {
       setAuthor('');

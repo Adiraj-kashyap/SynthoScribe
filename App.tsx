@@ -3,6 +3,7 @@ import { Article } from './types';
 import { db } from './lib/firebase';
 import { collection, query, onSnapshot, orderBy } from 'firebase/firestore';
 import { addArticle, updateArticle, seedInitialArticles } from './lib/firestore';
+import { useAuth } from './lib/auth';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import ArticleList from './components/ArticleList';
@@ -16,6 +17,7 @@ type View = 'list' | 'detail' | 'create';
 type ToastMessage = { id: number; message: string; type: 'success' | 'error' };
 
 const App: React.FC = () => {
+  const { user } = useAuth();
   const [view, setView] = useState<View>('list');
   const [isLoading, setIsLoading] = useState(true);
   const [selectedArticleId, setSelectedArticleId] = useState<string | null>(null);
@@ -108,12 +110,15 @@ const App: React.FC = () => {
         await updateArticle(articleId, articlePayload);
         showToast('Article updated successfully!', 'success');
       } else {
-        // Create new article
+        // Create new article - use Google account info if available
+        const authorName = user?.displayName || user?.email?.split('@')[0] || 'Anonymous';
+        const authorAvatar = user?.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(authorName)}&background=random`;
+        
         const newArticleData = {
           ...articlePayload,
           author: {
-            name: 'AI Contributor',
-            avatarUrl: 'https://i.pravatar.cc/150?u=aicontributor',
+            name: authorName,
+            avatarUrl: authorAvatar,
           },
           category: 'AI Generated',
         };

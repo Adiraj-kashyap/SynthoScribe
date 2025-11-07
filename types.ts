@@ -17,6 +17,7 @@ export interface Comment {
   id: string; // Firestore document ID
   articleId: string;
   author: string;
+  avatarUrl?: string; // Optional avatar URL from Google account
   content: string;
   createdAt: Date; // For sorting and display
 }
