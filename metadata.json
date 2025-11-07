@@ -1,0 +1,5 @@
+{
+  "name": "AI Content Platform - Phase 1 MVP",
+  "description": "A high-performance, single-author manual blog serving as the foundational MVP for a scalable, AI-driven content platform. Built with a Headless/Jamstack architecture for future-proofing.",
+  "requestFramePermissions": []
+}
