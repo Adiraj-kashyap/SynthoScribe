@@ -230,6 +230,8 @@ const CreatePost: React.FC<CreatePostProps> = ({ article, onArticleCreated, onCa
                           src={imageUrl} 
                           alt="Generated preview" 
                           className="w-full h-full object-cover rounded-lg"
+                          loading="eager"
+                          decoding="async"
                         />
                     ) : (
                         <div className="text-center text-gray-400 px-4">

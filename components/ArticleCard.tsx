@@ -22,6 +22,8 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article, onSelectArticle }) =
           alt={article.title} 
           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
           loading="lazy"
+          decoding="async"
+          fetchPriority="low"
         />
       </div>
       <div className="p-4 sm:p-6 flex flex-col flex-grow">
@@ -39,6 +41,9 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article, onSelectArticle }) =
             src={article.author.avatarUrl} 
             alt={article.author.name} 
             className="w-8 h-8 sm:w-10 sm:h-10 rounded-full mr-2 sm:mr-3 flex-shrink-0 object-cover"
+            loading="lazy"
+            decoding="async"
+            fetchPriority="low"
           />
           <div className="min-w-0 flex-1">
             <p className="font-semibold text-xs sm:text-sm truncate">{article.author.name}</p>

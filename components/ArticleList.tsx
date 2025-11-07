@@ -73,7 +73,9 @@ const ArticleList: React.FC<ArticleListProps> = ({ articles, onSelectArticle, se
                 src={firstArticle.imageUrl} 
                 alt={firstArticle.title}
                 className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                loading="lazy"
+                loading="eager"
+                decoding="async"
+                fetchPriority="high"
               />
             </div>
             <div>
@@ -91,6 +93,9 @@ const ArticleList: React.FC<ArticleListProps> = ({ articles, onSelectArticle, se
                   src={firstArticle.author.avatarUrl} 
                   alt={firstArticle.author.name} 
                   className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex-shrink-0 object-cover"
+                  loading="eager"
+                  decoding="async"
+                  fetchPriority="high"
                 />
                 <div className="min-w-0 flex-1">
                   <p className="font-semibold text-sm sm:text-base truncate">{firstArticle.author.name}</p>

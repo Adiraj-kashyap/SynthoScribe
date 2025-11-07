@@ -1,12 +1,20 @@
 /**
  * Compresses an image file to reduce its size
+ * Uses WebP format for better compression when supported, falls back to JPEG
  * @param file The image file to compress
  * @param maxWidth Maximum width in pixels (default: 1920)
  * @param maxHeight Maximum height in pixels (default: 1080)
  * @param quality Image quality 0-1 (default: 0.8)
+ * @param useWebP Whether to use WebP format (default: true)
  * @returns Compressed image as Blob
  */
-const compressImage = (file: File | Blob, maxWidth: number = 1920, maxHeight: number = 1080, quality: number = 0.8): Promise<Blob> => {
+const compressImage = (
+  file: File | Blob, 
+  maxWidth: number = 1920, 
+  maxHeight: number = 1080, 
+  quality: number = 0.8,
+  useWebP: boolean = true
+): Promise<Blob> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -38,15 +46,32 @@ const compressImage = (file: File | Blob, maxWidth: number = 1920, maxHeight: nu
           return;
         }
 
+        // Use better image rendering quality
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        
         ctx.drawImage(img, 0, 0, width, height);
         
-        // Determine MIME type
-        const mimeType = file instanceof File ? (file.type || 'image/jpeg') : 'image/jpeg';
+        // Try WebP first (better compression), fallback to JPEG
+        const mimeType = useWebP ? 'image/webp' : 'image/jpeg';
         
         canvas.toBlob(
           (blob) => {
             if (blob) {
               resolve(blob);
+            } else if (useWebP) {
+              // Fallback to JPEG if WebP fails
+              canvas.toBlob(
+                (jpegBlob) => {
+                  if (jpegBlob) {
+                    resolve(jpegBlob);
+                  } else {
+                    reject(new Error('Failed to compress image'));
+                  }
+                },
+                'image/jpeg',
+                quality
+              );
             } else {
               reject(new Error('Failed to compress image'));
             }
@@ -80,6 +105,7 @@ const fileToBase64 = (file: File | Blob): Promise<string> => {
 /**
  * Uploads an image file and returns it as a base64 data URL
  * Images are automatically compressed to keep them under Firestore's 1MB document limit
+ * Uses WebP format for optimal compression when supported
  * 
  * This solution is completely FREE - no paid Firebase Storage plan required!
  * Images are stored directly in Firestore as base64 data URLs.
@@ -100,24 +126,49 @@ export const uploadImage = async (file: File): Promise<string> => {
   }
 
   try {
-    // Compress the image to reduce size
-    // Target: Keep under 800KB to stay well under Firestore's 1MB limit
-    const compressedBlob = await compressImage(file, 1920, 1080, 0.8);
+    // Progressive compression strategy:
+    // 1. Start with reasonable quality WebP (1200x800, quality 0.75)
+    // 2. If still too large, reduce dimensions and quality
+    // 3. Final fallback: very aggressive compression
     
-    // Check compressed size
-    const MAX_COMPRESSED_SIZE = 800 * 1024; // 800KB
+    const TARGET_SIZE = 400 * 1024; // Target: 400KB (well under 1MB limit, accounting for base64 overhead)
+    const MAX_COMPRESSED_SIZE = 600 * 1024; // Hard limit: 600KB
+    
+    // Attempt 1: WebP at 1200x800, quality 0.75
+    let compressedBlob = await compressImage(file, 1200, 800, 0.75, true);
+    
     if (compressedBlob.size > MAX_COMPRESSED_SIZE) {
-      // Try more aggressive compression
-      const moreCompressed = await compressImage(file, 1280, 720, 0.7);
-      if (moreCompressed.size > MAX_COMPRESSED_SIZE) {
-        // Final attempt with very aggressive compression
-        const finalCompressed = await compressImage(file, 960, 540, 0.6);
-        return await fileToBase64(finalCompressed);
+      // Attempt 2: WebP at 960x640, quality 0.65
+      compressedBlob = await compressImage(file, 960, 640, 0.65, true);
+      
+      if (compressedBlob.size > MAX_COMPRESSED_SIZE) {
+        // Attempt 3: WebP at 800x600, quality 0.55
+        compressedBlob = await compressImage(file, 800, 600, 0.55, true);
+        
+        if (compressedBlob.size > MAX_COMPRESSED_SIZE) {
+          // Attempt 4: WebP at 640x480, quality 0.5 (very aggressive)
+          compressedBlob = await compressImage(file, 640, 480, 0.5, true);
+          
+          if (compressedBlob.size > MAX_COMPRESSED_SIZE) {
+            // Final attempt: JPEG at 640x480, quality 0.4 (most aggressive)
+            compressedBlob = await compressImage(file, 640, 480, 0.4, false);
+          }
+        }
       }
-      return await fileToBase64(moreCompressed);
     }
 
-    return await fileToBase64(compressedBlob);
+    // Convert to base64
+    const base64Url = await fileToBase64(compressedBlob);
+    
+    // Log compression stats for debugging
+    const originalSizeKB = (file.size / 1024).toFixed(2);
+    const compressedSizeKB = (compressedBlob.size / 1024).toFixed(2);
+    const base64SizeKB = ((base64Url.length * 3) / 4 / 1024).toFixed(2);
+    const compressionRatio = ((1 - compressedBlob.size / file.size) * 100).toFixed(1);
+    
+    console.log(`Image compressed: ${originalSizeKB}KB → ${compressedSizeKB}KB (${compressionRatio}% reduction), Base64: ${base64SizeKB}KB`);
+    
+    return base64Url;
   } catch (error: any) {
     console.error('Error processing image:', error);
     throw new Error(error?.message || 'Failed to process image. Please try again.');

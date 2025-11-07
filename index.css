@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-primary: #1E40AF;
+  --color-brand-secondary: #3B82F6;
+  --color-light-bg: #F9FAFB;
+  --color-dark-bg: #111827;
+  --color-light-text: #1F2937;
+  --color-dark-text: #F9FAFB;
+  --color-light-card: #FFFFFF;
+  --color-dark-card: #1F2937;
+  --color-light-border: #E5E7EB;
+  --color-dark-border: #374151;
+}
+
+/* Custom color utilities with proper dark mode support */
+@layer utilities {
+  /* Brand colors (same in light and dark) */
+  .bg-brand-primary { background-color: var(--color-brand-primary); }
+  .bg-brand-secondary { background-color: var(--color-brand-secondary); }
+  .text-brand-primary { color: var(--color-brand-primary); }
+  .text-brand-secondary { color: var(--color-brand-secondary); }
+  
+  /* Light mode colors */
+  .bg-light-bg { background-color: var(--color-light-bg); }
+  .bg-light-card { background-color: var(--color-light-card); }
+  .text-light-text { color: var(--color-light-text); }
+  .border-light-border { border-color: var(--color-light-border); }
+  
+  /* Dark mode colors - these work with dark: prefix */
+  .dark\:bg-dark-bg { background-color: var(--color-dark-bg); }
+  .dark\:bg-dark-card { background-color: var(--color-dark-card); }
+  .dark\:text-dark-text { color: var(--color-dark-text); }
+  .dark\:border-dark-border { border-color: var(--color-dark-border); }
+  
+  /* Dark mode hover states */
+  .dark\:hover\:bg-dark-bg:hover { background-color: var(--color-dark-bg); }
+  .dark\:hover\:bg-dark-card:hover { background-color: var(--color-dark-card); }
+  .dark\:hover\:bg-light-bg:hover { background-color: var(--color-dark-bg); }
+}
+

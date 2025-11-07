@@ -154,6 +154,9 @@ const ArticleDetail: React.FC<ArticleDetailProps> = ({ article, onBack, onEdit, 
             src={article.author.avatarUrl} 
             alt={article.author.name} 
             className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full flex-shrink-0 object-cover"
+            loading="eager"
+            decoding="async"
+            fetchPriority="high"
           />
           <div className="min-w-0">
             <p className="font-semibold text-sm sm:text-base md:text-lg truncate">{article.author.name}</p>
@@ -171,7 +174,9 @@ const ArticleDetail: React.FC<ArticleDetailProps> = ({ article, onBack, onEdit, 
               src={article.imageUrl} 
               alt={article.title} 
               className="w-full h-full object-cover"
-              loading="lazy"
+              loading="eager"
+              decoding="async"
+              fetchPriority="high"
             />
           </div>
       </div>

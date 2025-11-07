@@ -1,8 +1,7 @@
 import { initializeApp, getApp, getApps } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
-import { getStorage } from 'firebase/storage';
-import { getFunctions, connectFunctionsEmulator } from 'firebase/functions';
+import { getFunctions } from 'firebase/functions';
 
 // IMPORTANT: SECRETS MANAGEMENT
 // For this project to work, you must create a `.env.local` file in the root of your project
@@ -33,31 +32,78 @@ const firebaseConfig = {
   appId: process.env.REACT_APP_FIREBASE_APP_ID,
 };
 
-let app;
-let db = null;
-let auth = null;
-let storage = null;
-let functions = null;
+let app: any = null;
+let dbInstance: any = null;
+let authInstance: any = null;
+let functionsInstance: any = null;
 
-// Initialize Firebase only if all config values are provided
-if (firebaseConfig.apiKey) {
+// Lazy initialization to reduce initial load time
+function initializeFirebase() {
+  if (app) return; // Already initialized
+  
+  if (!firebaseConfig.apiKey) {
+    console.warn("Firebase config is missing. Real-time features will be disabled. Please check your .env.local file.");
+    return;
+  }
+
   if (!getApps().length) {
     app = initializeApp(firebaseConfig);
   } else {
     app = getApp();
   }
-  db = getFirestore(app);
-  auth = getAuth(app);
-  storage = getStorage(app);
-  functions = getFunctions(app);
   
-  // Connect to emulator in development if needed
-  // Uncomment the line below if you're using Firebase emulators locally
-  // if (import.meta.env.DEV) {
-  //   connectFunctionsEmulator(functions, 'localhost', 5001);
-  // }
-} else {
-  console.warn("Firebase config is missing. Real-time features will be disabled. Please check your .env.local file.");
+  // Lazy initialize Auth, Firestore and Functions (defer until needed)
+  // This reduces critical path by avoiding Firebase SDK initialization on import
 }
 
-export { db, auth, storage, functions };
+// Defer Firebase app initialization to reduce initial JS execution (mobile-optimized)
+// Only initialize when actually needed
+function getAppInstance() {
+  if (!app) {
+    if (!firebaseConfig.apiKey) return null;
+    if (!getApps().length) {
+      app = initializeApp(firebaseConfig);
+    } else {
+      app = getApp();
+    }
+  }
+  return app;
+}
+
+// Initialize app lazily - defer until first use
+// This reduces initial JS execution time significantly
+
+// Lazy getter for Auth
+function getAuthInstance() {
+  const appInstance = getAppInstance();
+  if (!appInstance) return null;
+  if (!authInstance) {
+    authInstance = getAuth(appInstance);
+  }
+  return authInstance;
+}
+
+// Lazy getters for Firestore and Functions
+function getDb() {
+  const appInstance = getAppInstance();
+  if (!appInstance) return null;
+  if (!dbInstance) {
+    dbInstance = getFirestore(appInstance);
+  }
+  return dbInstance;
+}
+
+function getFunctionsInstance() {
+  const appInstance = getAppInstance();
+  if (!appInstance) return null;
+  if (!functionsInstance) {
+    functionsInstance = getFunctions(appInstance);
+  }
+  return functionsInstance;
+}
+
+// Export as getters to maintain API compatibility
+// These will be called when needed, not on import
+export const db = getDb;
+export const auth = getAuthInstance;
+export { getFunctionsInstance as functions };

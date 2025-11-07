@@ -48,10 +48,11 @@ export async function generateContent(
   }
 
   // For admin operations, try Cloud Functions first (if available)
-  if (functions) {
+  const functionsInstance = functions();
+  if (functionsInstance) {
     try {
       const generateContentFunction = httpsCallable<GenerateContentRequest, GenerateContentResponse>(
-        functions,
+        functionsInstance,
         'generateContent'
       );
       
@@ -99,10 +100,11 @@ export async function generateContent(
  */
 export async function generateImageFromPrompt(prompt: string): Promise<string> {
   // Try Cloud Functions first (if available)
-  if (functions) {
+  const functionsInstance = functions();
+  if (functionsInstance) {
     try {
       const generateImageFunction = httpsCallable<GenerateImageRequest, GenerateImageResponse>(
-        functions,
+        functionsInstance,
         'generateImageFromPrompt'
       );
       

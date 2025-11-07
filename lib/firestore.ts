@@ -11,12 +11,13 @@ import { Article } from '../types';
  * @param avatarUrl Optional avatar URL from Google account.
  */
 export const addComment = async (articleId: string, author: string, content: string, avatarUrl?: string) => {
-  if (!db) {
+  const database = db();
+  if (!database) {
     throw new Error("Firebase is not initialized. Cannot add comment.");
   }
   
   try {
-    await addDoc(collection(db, 'comments'), {
+    await addDoc(collection(database, 'comments'), {
       articleId,
       author,
       content,
@@ -34,12 +35,13 @@ export const addComment = async (articleId: string, author: string, content: str
  * @param articleData The article data to be saved.
  */
 export const addArticle = async (articleData: Omit<Article, 'id' | 'publishDate'>) => {
-  if (!db) {
+  const database = db();
+  if (!database) {
     throw new Error("Firebase is not initialized. Cannot add article.");
   }
   
   try {
-    await addDoc(collection(db, 'articles'), {
+    await addDoc(collection(database, 'articles'), {
       ...articleData,
       publishDate: serverTimestamp(),
     });
@@ -56,12 +58,13 @@ export const addArticle = async (articleData: Omit<Article, 'id' | 'publishDate'
  * @param articleData The article data to update.
  */
 export const updateArticle = async (articleId: string, articleData: Partial<Omit<Article, 'id' | 'publishDate' | 'author'>>) => {
-  if (!db) {
+  const database = db();
+  if (!database) {
     throw new Error("Firebase is not initialized. Cannot update article.");
   }
   
   try {
-    const articleRef = doc(db, 'articles', articleId);
+    const articleRef = doc(database, 'articles', articleId);
     // Remove author from update data to preserve original author info
     const { author, ...dataToUpdate } = articleData as any;
     await updateDoc(articleRef, dataToUpdate);
@@ -78,15 +81,16 @@ export const updateArticle = async (articleId: string, articleData: Partial<Omit
  * @param userPhotoURL The photo URL from Google account
  */
 export const migrateOldArticles = async (userDisplayName: string, userPhotoURL: string) => {
-  if (!db) {
+  const database = db();
+  if (!database) {
     throw new Error("Firebase is not initialized. Cannot migrate articles.");
   }
 
   try {
-    const articlesCollection = collection(db, 'articles');
+    const articlesCollection = collection(database, 'articles');
     const snapshot = await getDocs(articlesCollection);
     
-    const batch = writeBatch(db);
+    const batch = writeBatch(database);
     let updateCount = 0;
 
     snapshot.docs.forEach((docSnapshot) => {
@@ -96,7 +100,7 @@ export const migrateOldArticles = async (userDisplayName: string, userPhotoURL: 
           data.author?.avatarUrl === 'https://i.pravatar.cc/150?u=aicontributor' ||
           !data.author?.name ||
           !data.author?.avatarUrl) {
-        const articleRef = doc(db, 'articles', docSnapshot.id);
+        const articleRef = doc(database, 'articles', docSnapshot.id);
         batch.update(articleRef, {
           author: {
             name: userDisplayName,
@@ -126,12 +130,13 @@ export const migrateOldArticles = async (userDisplayName: string, userPhotoURL: 
  * @param articleId The ID of the article to delete.
  */
 export const deleteArticle = async (articleId: string) => {
-  if (!db) {
+  const database = db();
+  if (!database) {
     throw new Error("Firebase is not initialized. Cannot delete article.");
   }
   
   try {
-    const articleRef = doc(db, 'articles', articleId);
+    const articleRef = doc(database, 'articles', articleId);
     await deleteDoc(articleRef);
   } catch (error) {
     console.error("Error deleting article from Firestore:", error);
@@ -145,20 +150,21 @@ export const deleteArticle = async (articleId: string) => {
  * This is designed to run once to seed the database.
  */
 export const seedInitialArticles = async () => {
-    if (!db) {
+    const database = db();
+    if (!database) {
         console.warn("Firebase not initialized, skipping article seeding.");
         return;
     }
 
     // Check if articles collection is empty
-    const articlesCollection = collection(db, 'articles');
+    const articlesCollection = collection(database, 'articles');
     const q = query(articlesCollection, limit(1));
     const snapshot = await getDocs(q);
 
     if (snapshot.empty) {
         console.log("No articles found. Seeding initial pillar articles...");
         try {
-            const batch = writeBatch(db);
+            const batch = writeBatch(database);
             PILLAR_ARTICLES.forEach(async article => {
                 const docRef = addDoc(articlesCollection, article); // Firestore will auto-generate an ID
                 // Note: The batch write doesn't support serverTimestamp directly in this manner.

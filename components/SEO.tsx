@@ -10,15 +10,17 @@ interface SEOProps {
 
 const SEO: React.FC<SEOProps> = ({ 
   article, 
-  defaultTitle = 'AI Content Platform MVP',
-  defaultDescription = 'A modern content platform powered by AI'
+  defaultTitle = 'SynthoScribe - AI Content Platform',
+  defaultDescription = 'AI-powered content platform for creating and managing blog articles with Google Gemini AI. Generate articles, images, and engage with readers.'
 }) => {
   const title = article ? `${article.title} | ${defaultTitle}` : defaultTitle;
   const description = article 
     ? article.excerpt || article.content.replace(/<[^>]*>?/gm, '').substring(0, 160) + '...'
     : defaultDescription;
   const image = article?.imageUrl || '';
-  const url = article ? `${window.location.origin}/article/${article.id}` : window.location.origin;
+  const url = typeof window !== 'undefined' 
+    ? (article ? `${window.location.origin}/article/${article.id}` : window.location.origin)
+    : '';
 
   return (
     <Helmet>
