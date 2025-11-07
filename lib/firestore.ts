@@ -8,8 +8,9 @@ import { Article } from '../types';
  * @param articleId The ID of the article being commented on.
  * @param author The name of the commenter.
  * @param content The content of the comment.
+ * @param avatarUrl Optional avatar URL from Google account.
  */
-export const addComment = async (articleId: string, author: string, content: string) => {
+export const addComment = async (articleId: string, author: string, content: string, avatarUrl?: string) => {
   if (!db) {
     throw new Error("Firebase is not initialized. Cannot add comment.");
   }
@@ -19,6 +20,7 @@ export const addComment = async (articleId: string, author: string, content: str
       articleId,
       author,
       content,
+      ...(avatarUrl && { avatarUrl }),
       createdAt: serverTimestamp(),
     });
   } catch (error) {
@@ -49,20 +51,73 @@ export const addArticle = async (articleData: Omit<Article, 'id' | 'publishDate'
 
 /**
  * Updates an existing article document in Firestore.
+ * Note: This function preserves the author information - it does not update the author field.
  * @param articleId The ID of the article to update.
  * @param articleData The article data to update.
  */
-export const updateArticle = async (articleId: string, articleData: Partial<Omit<Article, 'id' | 'publishDate'>>) => {
+export const updateArticle = async (articleId: string, articleData: Partial<Omit<Article, 'id' | 'publishDate' | 'author'>>) => {
   if (!db) {
     throw new Error("Firebase is not initialized. Cannot update article.");
   }
   
   try {
     const articleRef = doc(db, 'articles', articleId);
-    await updateDoc(articleRef, articleData);
+    // Remove author from update data to preserve original author info
+    const { author, ...dataToUpdate } = articleData as any;
+    await updateDoc(articleRef, dataToUpdate);
   } catch (error) {
     console.error("Error updating article in Firestore:", error);
     throw new Error("Could not update article. Please try again later.");
+  }
+};
+
+/**
+ * Migrates old articles that have "AI Contributor" as author to use the current user's info.
+ * This should be called once to update existing articles.
+ * @param userDisplayName The display name from Google account
+ * @param userPhotoURL The photo URL from Google account
+ */
+export const migrateOldArticles = async (userDisplayName: string, userPhotoURL: string) => {
+  if (!db) {
+    throw new Error("Firebase is not initialized. Cannot migrate articles.");
+  }
+
+  try {
+    const articlesCollection = collection(db, 'articles');
+    const snapshot = await getDocs(articlesCollection);
+    
+    const batch = writeBatch(db);
+    let updateCount = 0;
+
+    snapshot.docs.forEach((docSnapshot) => {
+      const data = docSnapshot.data();
+      // Check if author is "AI Contributor" or has the old random avatar
+      if (data.author?.name === 'AI Contributor' || 
+          data.author?.avatarUrl === 'https://i.pravatar.cc/150?u=aicontributor' ||
+          !data.author?.name ||
+          !data.author?.avatarUrl) {
+        const articleRef = doc(db, 'articles', docSnapshot.id);
+        batch.update(articleRef, {
+          author: {
+            name: userDisplayName,
+            avatarUrl: userPhotoURL,
+          }
+        });
+        updateCount++;
+      }
+    });
+
+    if (updateCount > 0) {
+      await batch.commit();
+      console.log(`Successfully migrated ${updateCount} article(s) to use your account info.`);
+      return updateCount;
+    } else {
+      console.log('No articles need migration.');
+      return 0;
+    }
+  } catch (error) {
+    console.error("Error migrating articles:", error);
+    throw new Error("Could not migrate articles. Please try again later.");
   }
 };
 

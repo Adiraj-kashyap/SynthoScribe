@@ -40,6 +40,7 @@ const ArticleDetail: React.FC<ArticleDetailProps> = ({ article, onBack, onEdit, 
           id: doc.id,
           articleId: data.articleId,
           author: data.author,
+          avatarUrl: data.avatarUrl,
           content: data.content,
           createdAt: data.createdAt ? data.createdAt.toDate() : new Date(),
         } as Comment;
@@ -76,9 +77,9 @@ const ArticleDetail: React.FC<ArticleDetailProps> = ({ article, onBack, onEdit, 
     }
   };
   
-  const handleAddComment = async (author: string, content: string) => {
+  const handleAddComment = async (author: string, content: string, avatarUrl?: string) => {
     try {
-      await addComment(article.id, author, content);
+      await addComment(article.id, author, content, avatarUrl);
       showToast('Comment posted successfully!', 'success');
     } catch (error) {
        const errorMessage = error instanceof Error ? error.message : 'Failed to post comment.';

@@ -19,7 +19,15 @@ const CommentList: React.FC<CommentListProps> = ({ comments }) => {
     <div className="space-y-6">
       {comments.map((comment) => (
         <div key={comment.id} className="flex items-start space-x-4">
-          <UserCircleIcon className="h-10 w-10 text-gray-400 dark:text-gray-500 flex-shrink-0 mt-1" />
+          {comment.avatarUrl ? (
+            <img 
+              src={comment.avatarUrl} 
+              alt={comment.author} 
+              className="h-10 w-10 rounded-full flex-shrink-0 mt-1 object-cover"
+            />
+          ) : (
+            <UserCircleIcon className="h-10 w-10 text-gray-400 dark:text-gray-500 flex-shrink-0 mt-1" />
+          )}
           <div className="flex-1 bg-light-bg dark:bg-dark-bg p-4 rounded-lg">
             <div className="flex items-center justify-between mb-1">
               <p className="font-bold text-light-text dark:text-dark-text">{comment.author}</p>

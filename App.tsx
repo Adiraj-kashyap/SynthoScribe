@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Article } from './types';
 import { db } from './lib/firebase';
 import { collection, query, onSnapshot, orderBy } from 'firebase/firestore';
-import { addArticle, updateArticle, seedInitialArticles } from './lib/firestore';
+import { addArticle, updateArticle, seedInitialArticles, migrateOldArticles } from './lib/firestore';
 import { useAuth } from './lib/auth';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -106,13 +106,18 @@ const App: React.FC = () => {
 
     try {
       if (articleId && editingArticle) {
-        // Update existing article
+        // Update existing article (author info is preserved automatically)
         await updateArticle(articleId, articlePayload);
         showToast('Article updated successfully!', 'success');
       } else {
-        // Create new article - use Google account info if available
-        const authorName = user?.displayName || user?.email?.split('@')[0] || 'Anonymous';
-        const authorAvatar = user?.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(authorName)}&background=random`;
+        // Create new article - require user to be signed in
+        if (!user) {
+          showToast('Please sign in with Google to create articles.', 'error');
+          return;
+        }
+
+        const authorName = user.displayName || user.email?.split('@')[0] || 'Anonymous';
+        const authorAvatar = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(authorName)}&background=random`;
         
         const newArticleData = {
           ...articlePayload,
@@ -132,6 +137,26 @@ const App: React.FC = () => {
       showToast(errorMessage, 'error');
     }
   };
+
+  // Migrate old articles once when user signs in
+  const [migrationDone, setMigrationDone] = useState(false);
+  useEffect(() => {
+    if (user && user.displayName && user.photoURL && !migrationDone) {
+      // Run migration once when user signs in
+      migrateOldArticles(user.displayName, user.photoURL)
+        .then((count) => {
+          if (count > 0) {
+            showToast(`Updated ${count} article(s) with your account information.`, 'success');
+          }
+          setMigrationDone(true);
+        })
+        .catch((error) => {
+          console.error('Migration error:', error);
+          // Don't show error to user, just log it
+          setMigrationDone(true); // Mark as done even on error to prevent retries
+        });
+    }
+  }, [user?.uid]); // Only run when user ID changes (i.e., on sign in)
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
