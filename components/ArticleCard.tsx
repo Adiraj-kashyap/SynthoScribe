@@ -16,29 +16,35 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article, onSelectArticle }) =
       className="group bg-light-card dark:bg-dark-card rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer flex flex-col"
       onClick={() => onSelectArticle(article.id)}
     >
-      <div className="aspect-w-16 aspect-h-9">
+      <div className="relative w-full h-48 sm:h-56 md:h-64 overflow-hidden bg-light-bg dark:bg-dark-bg">
         <img 
           src={article.imageUrl} 
           alt={article.title} 
-          className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
+          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+          loading="lazy"
         />
       </div>
-      <div className="p-6 flex flex-col flex-grow">
+      <div className="p-4 sm:p-6 flex flex-col flex-grow">
         <span className="inline-block bg-brand-secondary/10 text-brand-secondary text-xs font-semibold px-2.5 py-0.5 rounded-full mb-2 self-start">
           {article.category}
         </span>
-        <h3 className="text-xl font-bold mb-2 flex-grow group-hover:text-brand-primary dark:group-hover:text-brand-secondary transition-colors duration-300">
+        <h3 className="text-lg sm:text-xl font-bold mb-2 flex-grow group-hover:text-brand-primary dark:group-hover:text-brand-secondary transition-colors duration-300 line-clamp-2">
           {article.title}
         </h3>
-        <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
+        <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-3">
           {article.excerpt}
         </p>
         <div className="flex items-center mt-auto">
-          <img src={article.author.avatarUrl} alt={article.author.name} className="w-10 h-10 rounded-full mr-3"/>
-          <div>
-            <p className="font-semibold text-sm">{article.author.name}</p>
+          <img 
+            src={article.author.avatarUrl} 
+            alt={article.author.name} 
+            className="w-8 h-8 sm:w-10 sm:h-10 rounded-full mr-2 sm:mr-3 flex-shrink-0 object-cover"
+          />
+          <div className="min-w-0 flex-1">
+            <p className="font-semibold text-xs sm:text-sm truncate">{article.author.name}</p>
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              {formattedDate} &middot; {article.readingTime} min read
+              <span className="hidden sm:inline">{formattedDate} &middot; </span>
+              {article.readingTime} min read
             </p>
           </div>
         </div>

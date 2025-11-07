@@ -144,28 +144,34 @@ const ArticleDetail: React.FC<ArticleDetailProps> = ({ article, onBack, onEdit, 
         )}
       </div>
 
-      <header className="mb-8 text-center">
-        <span className="text-brand-secondary font-semibold">{article.category}</span>
-        <h1 className="text-4xl md:text-5xl font-extrabold text-light-text dark:text-dark-text my-4 leading-tight">
+      <header className="mb-6 sm:mb-8 text-center px-2">
+        <span className="text-brand-secondary font-semibold text-sm sm:text-base">{article.category}</span>
+        <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-light-text dark:text-dark-text my-3 sm:my-4 leading-tight px-2">
           {article.title}
         </h1>
-        <div className="flex items-center justify-center space-x-4 mt-6">
-          <img src={article.author.avatarUrl} alt={article.author.name} className="w-14 h-14 rounded-full"/>
-          <div>
-            <p className="font-semibold text-lg">{article.author.name}</p>
-            <p className="text-md text-gray-500 dark:text-gray-400">
-              {formattedDate} &middot; {article.readingTime} min read
+        <div className="flex items-center justify-center space-x-3 sm:space-x-4 mt-4 sm:mt-6">
+          <img 
+            src={article.author.avatarUrl} 
+            alt={article.author.name} 
+            className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full flex-shrink-0 object-cover"
+          />
+          <div className="min-w-0">
+            <p className="font-semibold text-sm sm:text-base md:text-lg truncate">{article.author.name}</p>
+            <p className="text-xs sm:text-sm md:text-base text-gray-500 dark:text-gray-400">
+              <span className="hidden sm:inline">{formattedDate} &middot; </span>
+              {article.readingTime} min read
             </p>
           </div>
         </div>
       </header>
 
-      <div className="mb-8 rounded-lg overflow-hidden shadow-2xl">
-         <div className="aspect-w-16 aspect-h-9">
+      <div className="mb-6 sm:mb-8 rounded-lg overflow-hidden shadow-2xl">
+         <div className="relative w-full h-48 sm:h-64 md:h-80 lg:h-96 overflow-hidden bg-light-bg dark:bg-dark-bg">
             <img 
               src={article.imageUrl} 
               alt={article.title} 
-              className="object-cover w-full h-full"
+              className="w-full h-full object-cover"
+              loading="lazy"
             />
           </div>
       </div>

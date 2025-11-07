@@ -156,13 +156,13 @@ const CreatePost: React.FC<CreatePostProps> = ({ article, onArticleCreated, onCa
         </Modal>
       )}
 
-      <div className="max-w-4xl mx-auto bg-light-card dark:bg-dark-card p-6 sm:p-8 rounded-xl shadow-lg">
-        <h2 className="text-3xl font-extrabold text-light-text dark:text-dark-text mb-6">
+      <div className="max-w-4xl mx-auto bg-light-card dark:bg-dark-card p-4 sm:p-6 md:p-8 rounded-xl shadow-lg">
+        <h2 className="text-2xl sm:text-3xl font-extrabold text-light-text dark:text-dark-text mb-4 sm:mb-6">
           {article ? 'Edit Post' : 'Create a New Post'}
         </h2>
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             {/* Left Column: Text Inputs */}
             <div className="space-y-6">
               <div>
@@ -215,22 +215,26 @@ const CreatePost: React.FC<CreatePostProps> = ({ article, onArticleCreated, onCa
 
             {/* Right Column: Image Generation & Upload */}
             <div>
-                <label className="block text-lg font-semibold text-light-text dark:text-dark-text mb-2">Featured Image</label>
-                <div className="relative aspect-w-16 aspect-h-9 w-full bg-light-bg dark:bg-dark-bg rounded-lg border-2 border-dashed border-light-border dark:border-dark-border flex items-center justify-center">
+                <label className="block text-base sm:text-lg font-semibold text-light-text dark:text-dark-text mb-2">Featured Image</label>
+                <div className="relative w-full h-48 sm:h-56 md:h-64 bg-light-bg dark:bg-dark-bg rounded-lg border-2 border-dashed border-light-border dark:border-dark-border flex items-center justify-center overflow-hidden">
                     {(isLoadingImage || isUploadingImage) && (
                         <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-white rounded-lg z-10">
-                           <SpinnerIcon className="w-8 h-8" />
-                           <p className="mt-2 text-sm font-semibold">
+                           <SpinnerIcon className="w-6 h-6 sm:w-8 sm:h-8" />
+                           <p className="mt-2 text-xs sm:text-sm font-semibold">
                              {isLoadingImage ? 'Generating Image...' : 'Uploading Image...'}
                            </p>
                         </div>
                     )}
                     {imageUrl ? (
-                        <img src={imageUrl} alt="Generated preview" className="object-cover w-full h-full rounded-lg" />
+                        <img 
+                          src={imageUrl} 
+                          alt="Generated preview" 
+                          className="w-full h-full object-cover rounded-lg"
+                        />
                     ) : (
-                        <div className="text-center text-gray-400">
-                           <PhotoIcon className="mx-auto h-12 w-12" />
-                           <p className="mt-2 text-sm">Generate or upload an image</p>
+                        <div className="text-center text-gray-400 px-4">
+                           <PhotoIcon className="mx-auto h-8 w-8 sm:h-12 sm:w-12" />
+                           <p className="mt-2 text-xs sm:text-sm">Generate or upload an image</p>
                         </div>
                     )}
                 </div>

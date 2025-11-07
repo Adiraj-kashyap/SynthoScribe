@@ -67,31 +67,38 @@ const ArticleList: React.FC<ArticleListProps> = ({ articles, onSelectArticle, se
           tabIndex={0}
           onKeyDown={(e) => e.key === 'Enter' && onSelectArticle(firstArticle.id)}
         >
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center bg-light-card dark:bg-dark-card p-6 rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300">
-            <div className="aspect-w-16 aspect-h-9 overflow-hidden rounded-lg">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-12 items-center bg-light-card dark:bg-dark-card p-4 sm:p-6 rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300">
+            <div className="relative w-full h-48 sm:h-64 md:h-80 lg:h-96 overflow-hidden rounded-lg bg-light-bg dark:bg-dark-bg">
               <img 
                 src={firstArticle.imageUrl} 
                 alt={firstArticle.title}
-                className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
+                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                loading="lazy"
               />
             </div>
             <div>
               <span className="inline-block bg-brand-secondary/10 text-brand-secondary text-xs font-semibold px-2.5 py-0.5 rounded-full mb-2">
                 {firstArticle.category}
               </span>
-              <h2 className="text-3xl lg:text-4xl font-extrabold text-light-text dark:text-dark-text mb-4 group-hover:text-brand-primary dark:group-hover:text-brand-secondary transition-colors">
+              <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold text-light-text dark:text-dark-text mb-3 sm:mb-4 group-hover:text-brand-primary dark:group-hover:text-brand-secondary transition-colors">
                 {firstArticle.title}
               </h2>
-              <p className="text-lg text-gray-600 dark:text-gray-300 mb-6">
+              <p className="text-sm sm:text-base md:text-lg text-gray-600 dark:text-gray-300 mb-4 sm:mb-6 line-clamp-3">
                 {firstArticle.excerpt}
               </p>
-              <div className="flex items-center space-x-4">
-                <img src={firstArticle.author.avatarUrl} alt={firstArticle.author.name} className="w-12 h-12 rounded-full"/>
-                <div>
-                  <p className="font-semibold">{firstArticle.author.name}</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {/* Fix: Format date to string before rendering. A Date object cannot be a React child. */}
-                    {firstArticle.publishDate instanceof Date ? firstArticle.publishDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'Date not available'} &middot; {firstArticle.readingTime} min read
+              <div className="flex items-center space-x-3 sm:space-x-4">
+                <img 
+                  src={firstArticle.author.avatarUrl} 
+                  alt={firstArticle.author.name} 
+                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex-shrink-0 object-cover"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold text-sm sm:text-base truncate">{firstArticle.author.name}</p>
+                  <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                    <span className="hidden sm:inline">
+                      {firstArticle.publishDate instanceof Date ? firstArticle.publishDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'Date not available'} &middot;{' '}
+                    </span>
+                    {firstArticle.readingTime} min read
                   </p>
                 </div>
               </div>
