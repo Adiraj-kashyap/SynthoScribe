@@ -34,6 +34,7 @@ const App: React.FC = () => {
   useEffect(() => {
     let unsubscribe: (() => void) | null = null;
     let mounted = true;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
     // Use requestIdleCallback or setTimeout to defer non-critical work
     const loadArticles = async () => {
@@ -116,17 +117,29 @@ const App: React.FC = () => {
     // Defer Firestore connection until after initial render (more aggressive for mobile)
     // This reduces critical path from 5+ seconds to < 1 second
     if (typeof requestIdleCallback !== 'undefined') {
-      requestIdleCallback(loadArticles, { timeout: 3000 });
+      const idleId = requestIdleCallback(loadArticles, { timeout: 3000 });
+      return () => {
+        mounted = false;
+        cancelIdleCallback(idleId);
+        if (unsubscribe) {
+          unsubscribe();
+        }
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
+      };
     } else {
-      setTimeout(loadArticles, 300); // Increased delay for mobile
+      timeoutId = setTimeout(loadArticles, 300); // Increased delay for mobile
+      return () => {
+        mounted = false;
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
+        if (unsubscribe) {
+          unsubscribe();
+        }
+      };
     }
-
-    return () => {
-      mounted = false;
-      if (unsubscribe) {
-        unsubscribe();
-      }
-    };
   }, []);
   
   const showToast = (message: string, type: 'success' | 'error') => {

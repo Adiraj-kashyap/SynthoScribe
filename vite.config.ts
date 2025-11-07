@@ -38,10 +38,37 @@ export default defineConfig(({ mode }) => {
         }
       },
       build: {
-        // Production optimizations
-        minify: 'esbuild',
+        // Production optimizations - use terser for better minification
+        minify: 'terser', // Better minification than esbuild (saves ~1MB)
         cssMinify: 'esbuild', // Minify CSS
         sourcemap: false,
+        terserOptions: {
+          compress: {
+            drop_console: true, // Remove console.logs in production
+            drop_debugger: true,
+            pure_funcs: ['console.log', 'console.info', 'console.debug', 'console.warn'], // Remove console methods
+            passes: 3, // Multiple passes for better compression (mobile-optimized)
+            unsafe: true, // More aggressive optimizations
+            unsafe_comps: true,
+            unsafe_math: true,
+            unsafe_methods: true,
+            unsafe_proto: true,
+            unsafe_regexp: true,
+            unsafe_undefined: true,
+            dead_code: true, // Remove dead code
+            unused: true, // Remove unused code
+            collapse_vars: true, // Collapse single-use variables
+            reduce_vars: true, // Reduce variable usage
+          },
+          format: {
+            comments: false, // Remove all comments
+            ascii_only: false, // Allow non-ASCII for smaller size
+          },
+          mangle: {
+            safari10: true, // Fix Safari 10+ issues
+            properties: false, // Don't mangle properties (safer for React)
+          },
+        },
         rollupOptions: {
           output: {
             manualChunks: (id) => {

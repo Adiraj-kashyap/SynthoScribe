@@ -18,25 +18,19 @@ const CACHE_RESOURCES = [
 
 // Install event - cache static assets
 self.addEventListener('install', (event) => {
-  console.log('[SW] Service Worker installing...');
   self.skipWaiting(); // Activate immediately
 });
 
 // Activate event - clean up old caches
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Service Worker activating...');
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames
           .filter((cacheName) => cacheName !== CACHE_NAME)
-          .map((cacheName) => {
-            console.log('[SW] Deleting old cache:', cacheName);
-            return caches.delete(cacheName);
-          })
+          .map((cacheName) => caches.delete(cacheName))
       );
     }).then(() => {
-      console.log('[SW] Service Worker activated and claiming clients');
       return self.clients.claim();
     })
   );
@@ -52,17 +46,10 @@ self.addEventListener('fetch', (event) => {
 
   if (shouldCache) {
     // Cache-first strategy: check cache first, then network
-    // Suppress console logs in production
-    if (self.location.hostname !== 'localhost') {
-      console.log('[SW] Intercepting cacheable resource:', url.href);
-    }
     event.respondWith(
       caches.open(CACHE_NAME).then((cache) => {
         return cache.match(request, { ignoreSearch: false, ignoreMethod: false, ignoreVary: false }).then((cachedResponse) => {
           if (cachedResponse) {
-            if (self.location.hostname !== 'localhost') {
-              console.log('[SW] Serving from cache:', url.href);
-            }
             // Check if cache is still valid (within 7 days)
             const cachedDate = cachedResponse.headers.get('sw-cached-date');
             if (cachedDate) {
@@ -122,18 +109,12 @@ self.addEventListener('fetch', (event) => {
           }
 
           // No cache - fetch from network
-          if (self.location.hostname !== 'localhost') {
-            console.log('[SW] Fetching from network (will cache):', url.href);
-          }
           return fetch(request, {
             cache: 'no-cache', // Force fresh fetch, but we'll cache it
             mode: 'cors', // Ensure CORS for cross-origin requests
             credentials: 'omit' // Don't send credentials for caching
           })
             .then((response) => {
-              if (self.location.hostname !== 'localhost') {
-                console.log('[SW] Caching response:', url.href);
-              }
               // Clone the response
               const responseToCache = response.clone();
 

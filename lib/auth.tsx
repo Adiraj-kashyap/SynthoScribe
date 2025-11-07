@@ -138,16 +138,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Compare emails case-insensitively and trim whitespace
   const userEmail = user?.email?.toLowerCase().trim() || '';
   const isAdmin = userEmail === ADMIN_EMAIL;
-  
-  // Debug logging in development
-  if (user && typeof window !== 'undefined') {
-    console.log('Auth Debug:', {
-      userEmail,
-      adminEmail: ADMIN_EMAIL,
-      isAdmin,
-      match: userEmail === ADMIN_EMAIL
-    });
-  }
 
   const value: AuthContextType = {
     user,
