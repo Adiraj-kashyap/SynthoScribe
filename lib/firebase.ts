@@ -1,5 +1,6 @@
 import { initializeApp, getApp, getApps } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
+// Dynamic import for Firestore to avoid blocking initial load
+// getFirestore will be imported when needed
 import { getAuth } from 'firebase/auth';
 import { getFunctions } from 'firebase/functions';
 
@@ -84,10 +85,12 @@ function getAuthInstance() {
 }
 
 // Lazy getters for Firestore and Functions
-function getDb() {
+async function getDb() {
   const appInstance = getAppInstance();
   if (!appInstance) return null;
   if (!dbInstance) {
+    // Dynamically import getFirestore to ensure Firestore module is loaded
+    const { getFirestore } = await import('firebase/firestore');
     dbInstance = getFirestore(appInstance);
   }
   return dbInstance;

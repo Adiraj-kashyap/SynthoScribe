@@ -11,7 +11,7 @@ import { Article } from '../types';
  * @param avatarUrl Optional avatar URL from Google account.
  */
 export const addComment = async (articleId: string, author: string, content: string, avatarUrl?: string) => {
-  const database = db();
+  const database = await db();
   if (!database) {
     throw new Error("Firebase is not initialized. Cannot add comment.");
   }
@@ -35,7 +35,7 @@ export const addComment = async (articleId: string, author: string, content: str
  * @param articleData The article data to be saved.
  */
 export const addArticle = async (articleData: Omit<Article, 'id' | 'publishDate'>) => {
-  const database = db();
+  const database = await db();
   if (!database) {
     throw new Error("Firebase is not initialized. Cannot add article.");
   }
@@ -58,7 +58,7 @@ export const addArticle = async (articleData: Omit<Article, 'id' | 'publishDate'
  * @param articleData The article data to update.
  */
 export const updateArticle = async (articleId: string, articleData: Partial<Omit<Article, 'id' | 'publishDate' | 'author'>>) => {
-  const database = db();
+  const database = await db();
   if (!database) {
     throw new Error("Firebase is not initialized. Cannot update article.");
   }
@@ -81,7 +81,7 @@ export const updateArticle = async (articleId: string, articleData: Partial<Omit
  * @param userPhotoURL The photo URL from Google account
  */
 export const migrateOldArticles = async (userDisplayName: string, userPhotoURL: string) => {
-  const database = db();
+  const database = await db();
   if (!database) {
     throw new Error("Firebase is not initialized. Cannot migrate articles.");
   }
@@ -130,7 +130,7 @@ export const migrateOldArticles = async (userDisplayName: string, userPhotoURL: 
  * @param articleId The ID of the article to delete.
  */
 export const deleteArticle = async (articleId: string) => {
-  const database = db();
+  const database = await db();
   if (!database) {
     throw new Error("Firebase is not initialized. Cannot delete article.");
   }
@@ -150,7 +150,7 @@ export const deleteArticle = async (articleId: string) => {
  * This is designed to run once to seed the database.
  */
 export const seedInitialArticles = async () => {
-    const database = db();
+    const database = await db();
     if (!database) {
         console.warn("Firebase not initialized, skipping article seeding.");
         return;

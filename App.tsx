@@ -53,7 +53,7 @@ const App: React.FC = () => {
       const firestore = await loadFirestore();
       const { collection, query, getDocs, onSnapshot, orderBy } = firestore;
 
-      const database = db(); // Call the getter function
+      const database = await db(); // Call the async getter function
       if (!database) {
         if (mounted) {
           setIsLoading(false);
@@ -84,8 +84,8 @@ const App: React.FC = () => {
 
         // Then set up real-time listener (non-blocking, happens after initial render)
         // This defers the Firestore channel connections that were blocking the critical path
-        setTimeout(() => {
-          const database = db(); // Get fresh reference
+        setTimeout(async () => {
+          const database = await db(); // Get fresh reference
           if (mounted && database) {
             const realtimeQ = query(collection(database, 'articles'), orderBy('publishDate', 'desc'));
             unsubscribe = onSnapshot(realtimeQ, (snapshot) => {

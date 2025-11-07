@@ -28,31 +28,57 @@ const ArticleDetail: React.FC<ArticleDetailProps> = ({ article, onBack, onEdit, 
   const [comments, setComments] = React.useState<Comment[]>([]);
 
   React.useEffect(() => {
-    if (!article.id || !db) return;
+    if (!article.id) return;
 
-    const commentsCol = collection(db, 'comments');
-    const q = query(commentsCol, where('articleId', '==', article.id), orderBy('createdAt', 'asc'));
+    let unsubscribe: (() => void) | null = null;
+    let mounted = true;
 
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const fetchedComments = querySnapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          articleId: data.articleId,
-          author: data.author,
-          avatarUrl: data.avatarUrl,
-          content: data.content,
-          createdAt: data.createdAt ? data.createdAt.toDate() : new Date(),
-        } as Comment;
-      });
-      setComments(fetchedComments);
-    }, (error) => {
-      console.error("Error fetching comments: ", error);
-      showToast('Could not load comments.', 'error');
-    });
+    // Async function to set up Firestore listener
+    const setupCommentsListener = async () => {
+      try {
+        const database = await db();
+        if (!database || !mounted) return;
+
+        const commentsCol = collection(database, 'comments');
+        const q = query(commentsCol, where('articleId', '==', article.id), orderBy('createdAt', 'asc'));
+
+        unsubscribe = onSnapshot(q, (querySnapshot) => {
+          if (!mounted) return;
+          const fetchedComments = querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+              id: doc.id,
+              articleId: data.articleId,
+              author: data.author,
+              avatarUrl: data.avatarUrl,
+              content: data.content,
+              createdAt: data.createdAt ? data.createdAt.toDate() : new Date(),
+            } as Comment;
+          });
+          setComments(fetchedComments);
+        }, (error) => {
+          console.error("Error fetching comments: ", error);
+          if (mounted) {
+            showToast('Could not load comments.', 'error');
+          }
+        });
+      } catch (error) {
+        console.error("Error setting up comments listener: ", error);
+        if (mounted) {
+          showToast('Could not load comments.', 'error');
+        }
+      }
+    };
+
+    setupCommentsListener();
 
     // Cleanup listener on component unmount
-    return () => unsubscribe();
+    return () => {
+      mounted = false;
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
   }, [article.id, showToast]);
 
   const handleGenerateSummary = async () => {

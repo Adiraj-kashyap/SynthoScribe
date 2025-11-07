@@ -41,6 +41,11 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
+  // Skip POST, PUT, DELETE, PATCH requests - Cache API only supports GET
+  if (request.method !== 'GET') {
+    return; // Let the browser handle non-GET requests normally
+  }
+
   // Check if this is a resource we want to cache aggressively
   const shouldCache = CACHE_RESOURCES.some((pattern) => pattern.test(url.href));
 
